@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Linq.Expressions;
 using ExpressionExtensionSQL.Extensions;
 using ExpressionExtensionSQL.Tests.Entities;
@@ -24,7 +25,6 @@ namespace ExpressionExtensionSQL.Tests
             var where = expression.ToSql();
             where.Sql.Should().Be("([tblOrder].[amount] = 1)");
         }
-
 
         [Fact(DisplayName = "SingleExpression - NotEqual")]
         public void NotEqualExpression()
@@ -138,6 +138,47 @@ namespace ExpressionExtensionSQL.Tests
             Expression<Func<Merchant, bool>> expression = x => !x.IsEnabled;
             var where = expression.ToSql();
             where.Sql.Should().Be("(NOT ([Merchant].[IsEnabled] = 1))");
+        }
+
+        [Fact(DisplayName = "SingleExpression - true")]
+        public void BooleanExpressionOnlyTrueUnary()
+        {
+            Expression<Func<Merchant, bool>> expression = x => true;
+            var where = expression.ToSql();
+            where.Sql.Should().Be("1=1");
+        }
+
+        [Fact(DisplayName = "SingleExpression - HasValue")]
+        public void BooleanExpressionHasValueUnary()
+        {
+            Expression<Func<Merchant, bool>> expression = x => x.Status.HasValue;
+            var where = expression.ToSql();
+            where.Sql.Should().Be("([Merchant].[Status] IS NOT NULL)");
+        }
+
+        [Fact(DisplayName = "SingleExpression - NOT HasValue")]
+        public void BooleanExpressionNotHasValueUnary()
+        {
+            Expression<Func<Merchant, bool>> expression = x => !x.Status.HasValue;
+            var where = expression.ToSql();
+            where.Sql.Should().Be("([Merchant].[Status] IS NULL)");
+        }
+
+        [Fact(DisplayName = "SingleExpression - Nullable Contains")]
+        public void BooleanExpressionInUnary()
+        {
+            Expression<Func<Merchant, bool>> expression = x => new[] { StatusEnum.Enable }.Contains(x.Status.Value);
+            var where = expression.ToSql();
+            where.Sql.Should().Be("([Merchant].[Status] IN @p1)");
+        }
+
+        [Fact(DisplayName = "SingleExpression - TRIM")]
+        public void BooleanExpressionTrimUnary()
+        {
+            var aa = "1111 ";
+            Expression<Func<Merchant, bool>> expression = x => x.Name == aa.Trim();
+            var where = expression.ToSql();
+            where.Sql.Should().Be("([Merchant].[Name] = @p1)");
         }
     }
 }
