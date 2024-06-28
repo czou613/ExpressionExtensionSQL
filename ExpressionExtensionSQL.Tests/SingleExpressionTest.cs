@@ -180,5 +180,13 @@ namespace ExpressionExtensionSQL.Tests
             var where = expression.ToSql();
             where.Sql.Should().Be("([Merchant].[Name] = @p1)");
         }
+
+        [Fact(DisplayName = "SingleExpression - ToString")]
+        public void BooleanExpressionToStringUnary()
+        {
+            Expression<Func<Merchant, bool>> expression = x => x.Id.ToString().Contains("1");
+            var where = expression.ToSql();
+            where.Sql.Should().Be("([Merchant].[Id] LIKE @p1)");
+        }
     }
 }
