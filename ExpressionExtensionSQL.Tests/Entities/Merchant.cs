@@ -18,5 +18,13 @@ namespace ExpressionExtensionSQL.Tests.Entities
         public string Name { get; private set; }
         public bool IsEnabled { get; private set; }
         public DateTime? DeletedAt { get; private set; }
+
+        public StatusEnum? Status { get; set; }
+    }
+
+    public enum StatusEnum
+    {
+        Enable,
+        Disable
     }
 }

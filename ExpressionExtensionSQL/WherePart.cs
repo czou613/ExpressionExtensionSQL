@@ -30,7 +30,8 @@ namespace ExpressionExtensionSQL
 
         public static WherePart IsParameter(int count, object value)
         {
-            return new WherePart($"@{count}", new Parameter(count.ToString(), value));
+            var parameterName = $"p{count}";
+            return new WherePart($"@{parameterName}", new Parameter(parameterName, value));
         }
 
         public static WherePart IsCollection(ref int countStart, IEnumerable values)
@@ -55,6 +56,11 @@ namespace ExpressionExtensionSQL
 
         public static WherePart Concat(string @operator, WherePart operand)
         {
+            if (@operator.Equals("NOT", StringComparison.InvariantCultureIgnoreCase) && operand.Sql.Contains("NOT NULL"))
+            {
+                return new WherePart(operand.Sql.Replace("NOT ",""));
+            }
+
             return new WherePart($"({@operator} {operand.Sql})", operand.Parameters);
         }
 
