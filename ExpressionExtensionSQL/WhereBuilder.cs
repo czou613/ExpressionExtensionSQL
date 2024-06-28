@@ -96,6 +96,11 @@ namespace ExpressionExtensionSQL
                 }
             }
 
+            if (expression.Method.Name == "ToString" && expression.Arguments.Count == 0)
+            {
+                return Recurse<T>(ref i, expression.Object);
+            }
+
             // IN queries:
             if (expression.Method.Name == "Contains")
             {
