@@ -15,7 +15,7 @@ namespace ExpressionExtensionSQL.Tests
         {
             Expression<Func<Merchant, bool>> expression = x => x.Name == "merchant1";
             var where = expression.ToSql();
-            where.Sql.Should().Be("([Merchant].[Name] = @1)");
+            where.Sql.Should().Be("([Merchant].[Name] = @p1)");
         }
 
         [Fact(DisplayName = "SingleExpression - Annotation - Equal")]
@@ -31,7 +31,7 @@ namespace ExpressionExtensionSQL.Tests
         {
             Expression<Func<Merchant, bool>> expression = x => x.Name != "merchant1";
             var where = expression.ToSql();
-            where.Sql.Should().Be("([Merchant].[Name] <> @1)");
+            where.Sql.Should().Be("([Merchant].[Name] <> @p1)");
         }
 
         [Fact(DisplayName = "SingleExpression - GreaterThan")]
@@ -55,7 +55,7 @@ namespace ExpressionExtensionSQL.Tests
         {
             Expression<Func<Product, bool>> expression = x => x.Name.Contains("pedro");
             var where = expression.ToSql();
-            where.Sql.Should().Be("([Product].[Name] LIKE @1)");
+            where.Sql.Should().Be("([Product].[Name] LIKE @p1)");
         }
 
         [Fact(DisplayName = "SingleExpression - NotContains")]
@@ -63,7 +63,7 @@ namespace ExpressionExtensionSQL.Tests
         {
             Expression<Func<Product, bool>> expression = x => !x.Name.Contains("pedro");
             var where = expression.ToSql();
-            where.Sql.Should().Be("(NOT ([Product].[Name] LIKE @1))");
+            where.Sql.Should().Be("(NOT ([Product].[Name] LIKE @p1))");
         }
 
         [Fact(DisplayName = "SingleExpression - LessThan")]
@@ -188,5 +188,17 @@ namespace ExpressionExtensionSQL.Tests
             var where = expression.ToSql();
             where.Sql.Should().Be("([Merchant].[Id] LIKE @p1)");
         }
+
+        [Fact(DisplayName = "PropertyExpression")]
+        public void PropertyExpression()
+        {
+            var product = new Product() { Merchant = new Merchant(1, "tst") };
+
+            Expression<Func<Merchant, bool>> expression = x => x.Name.Contains(product.Merchant.Name);
+            var where = expression.ToSql();
+            where.Sql.Should().Be("([Merchant].[Name] LIKE @p1)");
+        }
     }
+
+   
 }

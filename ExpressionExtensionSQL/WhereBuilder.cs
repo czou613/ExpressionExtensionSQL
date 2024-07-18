@@ -136,14 +136,33 @@ namespace ExpressionExtensionSQL
                 return WherePart.Concat(Recurse<T>(ref i, expression.Expression), "<>", WherePart.IsSql("NULL"));
             }
 
+            if (expression.Member.Name == "Value")
+            {
+                return Recurse<T>(ref i, expression.Expression, isUnary, prefix, postfix, left);
+            }
+
             if (isUnary && expression.Type == typeof(bool))
             {
                 return WherePart.Concat(Recurse<T>(ref i, expression), "=", WherePart.IsSql("1"));
             }
 
-            if (expression.Expression is MemberExpression && expression.Expression.NodeType == ExpressionType.MemberAccess)
+            var childExpression = expression.Expression;
+            while (true)
             {
-                return Recurse<T>(ref i, expression.Expression, isUnary, prefix, postfix, left);
+                if (childExpression is null) break;
+
+                switch (childExpression.NodeType)
+                {
+                    case ExpressionType.MemberAccess:
+                        childExpression = (childExpression as MemberExpression).Expression;
+                        continue;
+                    case ExpressionType.Constant:
+                        var value = GetValue(expression);
+                        if (value is string textValue) value = prefix + textValue + postfix;
+
+                        return WherePart.IsParameter(i++, value);
+                }
+                break;
             }
 
             if (expression.Member is PropertyInfo property)
